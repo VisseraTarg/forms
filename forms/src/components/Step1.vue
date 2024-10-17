@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { useForm } from 'vee-validate'
+import { useForm, useIsFieldValid, useIsFormDirty, useIsFormValid } from 'vee-validate'
 import { object, string } from 'yup'
 import Header from '@/components/Header.vue'
-import {useDataStore} from '@/stores/store'
+import { useDataStore } from '@/stores/store'
+import { computed } from 'vue'
 
 
 const pageNumbers = {
@@ -11,29 +12,36 @@ const pageNumbers = {
   c: 3,
 }
 
-const { values, validate, errors, defineField } = useForm({
+const store = useDataStore()
+const { values, validate, errors, defineField, resetForm } = useForm({
   validationSchema: object({
     surname: string()
         .min(2)
-        .required(),
+        .required('Это поле обязательно'),
     name: string()
         .min(2)
-        .required(),
+        .required('Это поле обязательно'),
     patronymic: string()
         .min(2),
   }),
+  initialValues: {
+    surname: store.data.surname,
+    name: store.data.name,
+    patronymic: store.data.patronymic,// ломает валидацию
+  },
 })
 
 const [ surname ] = defineField('surname')
 const [ name ] = defineField('name')
 const [ patronymic ] = defineField('patronymic')
 
-const store = useDataStore()
-
-const preSubmit = (surname,name,patronymic) => {
-  store.saveStep1(surname,name,patronymic)
-  console.log('Step 1: ', store.data.surname, store.data.name, store.data.patronymic)
+const preSubmit = (surname, name, patronymic) => {
+  store.saveStep1(surname, name, patronymic)
 }
+
+const isValid = computed(() => useIsFieldValid('surname') && useIsFieldValid('name'))
+
+
 
 
 
@@ -44,24 +52,32 @@ const preSubmit = (surname,name,patronymic) => {
     <div class="form">
       <Header :pageNumbers="pageNumbers"/>
       <div class="form__wrapper">
-        store: {{ store.data }} <br>
+        isValidS: {{ useIsFieldValid('surname') }}<br>
+        isValidN: {{ useIsFieldValid('name') }}<br>
+        isValid: {{ isValid }}
         <div class="input__wrapper">
           <div class="label">Фамилия</div>
-          <input class="input" type="text" v-model="surname"> {{ errors.surname }}
+          <input class="input" type="text" v-model="surname">
           <div class="error" v-if="errors.surname">Ошибка</div>
         </div>
         <div class="input__wrapper">
           <div class="label">Имя</div>
-          <input class="input" type="text" v-model="name"> {{ errors.name }}
+          <input class="input" type="text" v-model="name">
           <div class="error" v-if="errors.name">Ошибка</div>
         </div>
         <div class="input__wrapper">
           <div class="label">Отчество</div>
-          <input class="input" type="text" v-model="patronymic"> {{ errors.patronymic }}
+          <input class="input" type="text" v-model="patronymic">
           <div class="error" v-if="errors.patronymic">Ошибка</div>
         </div>
         <div class="input__wrapper">
-          <RouterLink to="/page_2"><input type="submit" value="Далее" @click="preSubmit(surname,name,patronymic)"></RouterLink>
+          <RouterLink to="/page_2">
+            <input type="submit"
+                   value="Далее"
+                   @click="preSubmit(surname,name,patronymic)"
+                   v-bind:disabled="isValid"
+            >
+          </RouterLink>
         </div>
 
       </div>
@@ -83,8 +99,8 @@ const preSubmit = (surname,name,patronymic) => {
   box-shadow: 0 0 50px 0 rgba(34, 60, 80, 0.08);
 }
 
-.input__wrapper{
- margin-top: 10px;
+.input__wrapper {
+  margin-top: 10px;
 }
 
 .label {

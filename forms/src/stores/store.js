@@ -1,30 +1,31 @@
-import {defineStore} from 'pinia'
-import {computed, ref} from "vue";
+import { defineStore } from 'pinia'
+import { ref } from 'vue'
 
+const getInitialData = () => ({
+    surname: '',
+    name: '',
+    patronymic: '',
+    day: Number,
+    month: Number,
+    year: Number,
+    gender: '',
+    isMarried: '',
+    email: '',
+    telephone: Number,
+})
 
 export const useDataStore = defineStore('dataStore', () => {
     const data = ref(
-        {
-            surname: "",
-            name: "",
-            patronymic: "",
-            day: Number,
-            month: Number,
-            year: Number,
-            gender: "",
-            isMarried: Boolean,
-            email: "",
-            telephone: Number,
-        }
+        getInitialData(),
     )
 
-    const saveStep1 = (surname,name,patronymic) => {
+    const saveStep1 = (surname, name, patronymic) => {
         data.value.surname = surname
         data.value.name = name
         data.value.patronymic = patronymic
     }
 
-    const saveStep2 = (day,month,year,gender,isMarried,email,telephone) => {
+    const saveStep2 = (day, month, year, gender, isMarried, email, telephone) => {
         data.value.day = day
         data.value.month = month
         data.value.year = year
@@ -34,9 +35,15 @@ export const useDataStore = defineStore('dataStore', () => {
         data.value.telephone = telephone
     }
 
+    const clearStoreData = () => {
+        console.log('sdfsdfsdfsdfdsfsdf')
+        data.value = getInitialData()
+    }
+
     return {
         data,
         saveStep1,
-        saveStep2
+        saveStep2,
+        clearStoreData,
     }
 })

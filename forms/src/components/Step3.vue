@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { useForm } from 'vee-validate'
-import { object, string } from 'yup'
 import Header from '@/components/Header.vue'
-import {useDataStore} from '@/stores/store'
+import { useDataStore } from '@/stores/store'
+import { computed, ref } from 'vue'
 
 const pageNumbers = {
   a: 3,
@@ -12,22 +11,49 @@ const pageNumbers = {
 
 const store = useDataStore()
 
-const isMarried =  () => {
-  if (store.data.isMarried == true) return "В браке"
-  return "Не в браке"
+const months = [ 'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентабрь', 'Октябрь', 'Ноябрь', 'Декабрь' ]
+
+const isConfirm = ref(false)
+
+const confirm = () => {
+  console.log('confirm', isConfirm.value)
+  isConfirm.value = !isConfirm.value
 }
+
+const forSubmit = computed(() => {
+  return {
+    surname: store.data.surname,
+    name: store.data.name,
+    patronymic: store.data.patronymic,
+    day: store.data.day,
+    month: store.data.month,
+    year: store.data.year,
+    gender: store.data.gender,
+    isMarried: store.data.isMarried,
+    email: store.data.email,
+    telephone: store.data.telephone,
+  }
+})
+
+const submit = () => {
+  console.log('submit', forSubmit.value)
+
+  store.clearStoreData()
+  alert('Данные отправлены')
+}
+
 
 </script>
 
 <template>
+
   <div class="wrapper">
     <div class="form">
       <Header :pageNumbers="pageNumbers"/>
       <div class="form__wrapper">
-        store: {{ store.data }} <br>
         <div class="input__wrapper">
           <div class="input__wrapper">
-            <div class="label" >Фамилия</div>
+            <div class="label">Фамилия</div>
             <input class="input" type="text" :value="store.data.surname" readonly/>
           </div>
           <div class="input__wrapper">
@@ -40,17 +66,17 @@ const isMarried =  () => {
           </div>
           <div class="input__wrapper">
             <div class="label">Дата рождения</div>
-            <select class="select_readonly" >
+            <select class="select_readonly">
               <option selected disabled>
                 {{ store.data.day }}
               </option>
             </select>
-            <select class="select_readonly" >
+            <select class="select_readonly">
               <option selected disabled>
-                {{ store.data.month }}
+                {{ months[store.data.month] }}
               </option>
             </select>
-            <select class="select_readonly" >
+            <select class="select_readonly">
               <option selected disabled>
                 {{ store.data.year }}
               </option>
@@ -58,24 +84,32 @@ const isMarried =  () => {
           </div>
           <div class="input__wrapper">
             <div class="label">Пол</div>
-            <select class="select_" >
-              <option selected disabled>{{ store.data.gender }}</option>
+            <select class="select_readonly">
+              <option selected disabled v-if="store.data.gender">{{ store.data.gender }}</option>
+              <option selected disabled v-else>Не выбрано</option>
             </select>
           </div>
           <div class="input__wrapper">
             <div class="label">Семейной положение</div>
-            <select class="select_">
-              <option selected disabled>{{isMarried}}</option>
+            <select class="select_readonly">
+              <option selected disabled>{{ store.data.isMarried }}</option>
             </select>
           </div>
           <div class="input__wrapper">
             <div class="label">Email</div>
-            <input class="input" type="text" :value="store.data.email" readonly>
+            <input class="input" type="text" :value="store?.data.email" readonly>
           </div>
           <div class="input__wrapper">
             <div class="label">Телефон</div>
-            <input class="input" type="number" :value="store.data.telephone" readonly>
+            <input class="input" type="number" :value="store?.data.telephone" readonly>
           </div>
+        </div>
+        <div class="input__wrapper">
+          <input type="checkbox" v-model="isConfirm" @click="confirm">
+          <span>Подтверждаю обработку личных данных</span>
+        </div>
+        <div class="input__wrapper">
+          <input type="submit" value="Отправить" :disabled="!isConfirm" @click="submit"/>
         </div>
 
 
@@ -100,11 +134,20 @@ const isMarried =  () => {
 
 .select_readonly {
   pointer-events: none;
+  background-color: #c5c4c4;
 }
 
 .label {
   font-weight: 600;
   margin-bottom: 4px;
+}
+
+span {
+  margin-left: 10px;
+}
+
+.input__wrapper {
+  margin-top: 10px;
 }
 
 .input {
@@ -113,15 +156,12 @@ const isMarried =  () => {
   border-radius: 4px;
   border: 1px solid #ccc;
   font-weight: 600;
+  background-color: #c5c4c4;
 }
 
 .input:focus {
   outline: transparent;
 }
 
-.error {
-  margin-top: 2px;
-  color: #ff0000;
-  font-size: 14px;
-}
+
 </style>

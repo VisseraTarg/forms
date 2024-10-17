@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { useForm } from 'vee-validate'
+import { useForm, useIsFormDirty, useIsFormValid } from 'vee-validate'
 import { boolean, number, object, string } from 'yup'
 import { computed } from 'vue'
 import Header from '@/components/Header.vue'
-import {useDataStore} from '@/stores/store'
+import { useDataStore } from '@/stores/store'
 
 const pageNumbers = {
   a: 2,
@@ -17,19 +17,28 @@ const { values, validate, errors, defineField } = useForm({
         .min(1)
         .max(31)
         .integer()
-        .required(),
+        .required('Это поле обязательно'),
     month: string()
-        .required(),
+        .required('Это поле обязательно'),
     year: number()
         .min(1920)
         .max(2024)
-        .required(),
+        .required('Это поле обязательно'),
     gender: string(),
-    isMarried: boolean(),
+    isMarried: string(),
     email: string()
         .email()
         .required(),
     telephone: number()
+        .test(
+            'jhgjhjhjhjhj',
+            'hgvhgvhgvhgvh',
+            (val) => {
+              const t1 = /^\+996\s?\((55|75|99|77|22|70|50|312)\d?\)\s?\d{3}\s?\d{3}$/
+              if (val === t1) return true
+              else return false
+            },
+        )
         .required(),
   }),
 })
@@ -68,10 +77,15 @@ const isMonthDisabled = computed(() => !year.value)
 
 const store = useDataStore()
 
-const preSubmit = (day,month,year,gender,isMarried,email,telephone) => {
-  store.saveStep2(day,month,year,gender,isMarried,email,telephone)
+const preSubmit = (day, month, year, gender, isMarried, email, telephone) => {
+  store.saveStep2(day, month, year, gender, isMarried, email, telephone)
   console.log('Step 2: ', store.data)
 }
+
+const isValid = useIsFormValid()
+const isDirty = useIsFormDirty()
+
+const isDisabled = computed(() => !isDirty.value || !isValid.value)
 
 </script>
 
@@ -80,7 +94,6 @@ const preSubmit = (day,month,year,gender,isMarried,email,telephone) => {
     <div class="form">
       <Header :pageNumbers="pageNumbers"/>
       <div class="form__wrapper">
-        store: {{ store.data }} <br>
         <div class="input__wrapper">
           <div class="label">Дата рождения</div>
           <select class="select_" v-bind:disabled="isDaysDisabled" v-model="day">
@@ -107,8 +120,8 @@ const preSubmit = (day,month,year,gender,isMarried,email,telephone) => {
         <div class="input__wrapper">
           <div class="label">Семейной положение</div>
           <select class="select_" v-model="isMarried">
-            <option :value="true">В браке</option>
-            <option :value="false">Не в браке</option>
+            <option value="В браке">В браке</option>
+            <option value="Не в браке">Не в браке</option>
           </select>
         </div>
         <div class="input__wrapper">
@@ -118,11 +131,18 @@ const preSubmit = (day,month,year,gender,isMarried,email,telephone) => {
         </div>
         <div class="input__wrapper">
           <div class="label">Телефон</div>
-          <input class="input" type="number" v-model="telephone"> {{ errors.email }}
-          <div class="error" v-if="errors.telephone">Ошибка</div><br>
+          <input class="input" type="number" v-model="telephone"> {{ errors.telephone }}
+          <div class="error" v-if="errors.telephone">Ошибка</div>
+          <br>
         </div>
         <div class="input__wrapper">
-            <RouterLink to="/page_3"><input type="submit" value="Далее" @click="preSubmit(day,month,year,gender,isMarried,email,telephone)"></RouterLink>
+          <RouterLink to="/page_3">
+            <input type="submit"
+                   value="Далее"
+                   @click="preSubmit(day,month,year,gender,isMarried,email,telephone)"
+                   :disabled="isDisabled"
+            >
+          </RouterLink>
         </div>
       </div>
     </div>
@@ -148,7 +168,7 @@ const preSubmit = (day,month,year,gender,isMarried,email,telephone) => {
   margin-top: 10px;
 }
 
-.input__wrapper{
+.input__wrapper {
   margin-top: 10px;
 }
 
