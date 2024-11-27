@@ -36,7 +36,7 @@ export const useDataStore = defineStore('dataStore', () => {
     }
 
     const clearStoreData = () => {
-        console.log('sdfsdfsdfsdfdsfsdf')
+        console.log('форма очищена')
         data.value = getInitialData()
     }
 

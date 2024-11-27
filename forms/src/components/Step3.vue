@@ -101,7 +101,7 @@ const submit = () => {
           </div>
           <div class="input__wrapper">
             <div class="label">Телефон</div>
-            <input class="input" type="number" :value="store?.data.telephone" readonly>
+            <input class="input" :value="store?.data.telephone" readonly>
           </div>
         </div>
         <div class="input__wrapper">
@@ -109,7 +109,15 @@ const submit = () => {
           <span>Подтверждаю обработку личных данных</span>
         </div>
         <div class="input__wrapper">
-          <input type="submit" value="Отправить" :disabled="!isConfirm" @click="submit"/>
+          <RouterLink to="/page_1">
+            <input
+                type="submit"
+                value="Отправить"
+                :disabled="!isConfirm"
+                @click="submit"
+                class="button"
+            />
+          </RouterLink>
         </div>
 
 
@@ -119,49 +127,5 @@ const submit = () => {
 </template>
 
 <style scoped>
-.form {
-  display: flex;
-  flex-direction: column;
-  gap: 60px;
-  min-width: 500px;
-  min-height: 500px;
-  padding: 20px;
-  border-radius: 16px;
-  -webkit-box-shadow: 0 0 50px 0 rgba(34, 60, 80, 0.08);
-  -moz-box-shadow: 0 0 50px 0 rgba(34, 60, 80, 0.08);
-  box-shadow: 0 0 50px 0 rgba(34, 60, 80, 0.08);
-}
-
-.select_readonly {
-  pointer-events: none;
-  background-color: #c5c4c4;
-}
-
-.label {
-  font-weight: 600;
-  margin-bottom: 4px;
-}
-
-span {
-  margin-left: 10px;
-}
-
-.input__wrapper {
-  margin-top: 10px;
-}
-
-.input {
-  color: #161616;
-  padding: 8px;
-  border-radius: 4px;
-  border: 1px solid #ccc;
-  font-weight: 600;
-  background-color: #c5c4c4;
-}
-
-.input:focus {
-  outline: transparent;
-}
-
 
 </style>

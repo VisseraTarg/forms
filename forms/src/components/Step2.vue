@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useForm, useIsFormDirty, useIsFormValid } from 'vee-validate'
+import { useForm, useIsFieldDirty, useIsFieldValid, useIsFormDirty, useIsFormValid } from 'vee-validate'
 import { boolean, number, object, string } from 'yup'
 import { computed } from 'vue'
 import Header from '@/components/Header.vue'
@@ -17,29 +17,38 @@ const { values, validate, errors, defineField } = useForm({
         .min(1)
         .max(31)
         .integer()
-        .required('Это поле обязательно'),
+        .required(),
     month: string()
-        .required('Это поле обязательно'),
+        .required(),
     year: number()
         .min(1920)
         .max(2024)
-        .required('Это поле обязательно'),
+        .required(),
     gender: string(),
     isMarried: string(),
     email: string()
-        .email()
-        .required(),
-    telephone: number()
-        .test(
-            'jhgjhjhjhjhj',
-            'hgvhgvhgvhgvh',
-            (val) => {
-              const t1 = /^\+996\s?\((55|75|99|77|22|70|50|312)\d?\)\s?\d{3}\s?\d{3}$/
-              if (val === t1) return true
-              else return false
-            },
+        .required('Это поле обязательно')
+        .email('Email введён неправильно'),
+    telephone: string()
+        .required('Это поле обязательно')
+        .test('start',
+            'Номер должен начинаться с 996 или 0',
+            (val) => val?.startsWith('996') || val?.startsWith('0') || false
         )
-        .required(),
+        .test(
+            'local',
+            'Номер должен быть местным',
+            (val) => val?.startsWith('996')
+                || val?.startsWith('070')
+                || val?.startsWith('050')
+                || val?.startsWith('077')
+                || val?.startsWith('022')
+                || val?.startsWith('055')
+                || val?.startsWith('099')
+                || val?.startsWith('0312')
+                || false,
+        )
+        .min(10, 'Номер должен содержать минимум 10 цифр')
   }),
 })
 
@@ -75,12 +84,33 @@ const days = computed(() => {
 const isDaysDisabled = computed(() => !days.value.length)
 const isMonthDisabled = computed(() => !year.value)
 
+function onInput(event: Event) {
+  const input = event.target as HTMLInputElement
+  input.value =  input.value.slice(0,12).replace(/[^\d+]/g, '')
+      .replace(/(?!^)\+/, '')
+  if (input.value.startsWith('996') || input.value.startsWith('0312')) input.value = input.value.slice(0,12)
+  if ( input.value.startsWith('070')
+  || input.value.startsWith('050')
+  || input.value.startsWith('077')
+  || input.value.startsWith('022')
+  || input.value.startsWith('055')
+  || input.value.startsWith('099')) input.value = input.value.slice(0,10)
+  telephone.value = input.value
+}
+
 const store = useDataStore()
 
 const preSubmit = (day, month, year, gender, isMarried, email, telephone) => {
+  if (telephone.startsWith('0')) telephone = '+996' + telephone.slice(1)
+  else telephone = '+' + telephone
   store.saveStep2(day, month, year, gender, isMarried, email, telephone)
   console.log('Step 2: ', store.data)
 }
+
+const isValid_E = useIsFieldValid('email')
+const isDirty_E = useIsFieldDirty('email')
+
+const showError_E = computed(() => !isValid_E.value && isDirty_E.value)
 
 const isValid = useIsFormValid()
 const isDirty = useIsFormDirty()
@@ -95,7 +125,7 @@ const isDisabled = computed(() => !isDirty.value || !isValid.value)
       <Header :pageNumbers="pageNumbers"/>
       <div class="form__wrapper">
         <div class="input__wrapper">
-          <div class="label">Дата рождения</div>
+          <div class="label">Дата рождения<span>*</span></div>
           <select class="select_" v-bind:disabled="isDaysDisabled" v-model="day">
             <option v-for="day in days" :value="day">{{ day }}</option>
           </select>
@@ -125,23 +155,25 @@ const isDisabled = computed(() => !isDirty.value || !isValid.value)
           </select>
         </div>
         <div class="input__wrapper">
-          <div class="label">Email</div>
-          <input class="input" type="text" v-model="email"> {{ errors.email }}
-          <div class="error" v-if="errors.email">Ошибка</div>
+          <div class="label">Email<span>*</span></div>
+          <input class="input" type="text" v-model="email">
+          <div class="error" v-if="errors.email">{{ errors.email }}</div>
         </div>
         <div class="input__wrapper">
-          <div class="label">Телефон</div>
-          <input class="input" type="number" v-model="telephone"> {{ errors.telephone }}
-          <div class="error" v-if="errors.telephone">Ошибка</div>
+          <div class="label">Телефон<span>*</span></div>
+          <input class="input" v-model="telephone" @input="onInput">
+          <div class="error" v-if="errors.telephone">{{ errors.telephone }}</div>
           <br>
         </div>
         <div class="input__wrapper">
           <RouterLink to="/page_3">
-            <input type="submit"
-                   value="Далее"
-                   @click="preSubmit(day,month,year,gender,isMarried,email,telephone)"
-                   :disabled="isDisabled"
+            <button
+                class="button"
+                @click="preSubmit(day,month,year,gender,isMarried,email,telephone)"
+                :disabled="isDisabled"
             >
+              Далее
+            </button>
           </RouterLink>
         </div>
       </div>
@@ -150,43 +182,5 @@ const isDisabled = computed(() => !isDirty.value || !isValid.value)
 </template>
 
 <style scoped>
-.form {
-  display: flex;
-  flex-direction: column;
-  gap: 60px;
-  min-width: 500px;
-  min-height: 500px;
-  padding: 20px;
-  border-radius: 16px;
-  -webkit-box-shadow: 0 0 50px 0 rgba(34, 60, 80, 0.08);
-  -moz-box-shadow: 0 0 50px 0 rgba(34, 60, 80, 0.08);
-  box-shadow: 0 0 50px 0 rgba(34, 60, 80, 0.08);
-}
 
-.label {
-  font-weight: 600;
-  margin-top: 10px;
-}
-
-.input__wrapper {
-  margin-top: 10px;
-}
-
-.input {
-  color: #161616;
-  padding: 8px;
-  border-radius: 4px;
-  border: 1px solid #ccc;
-  font-weight: 600;
-}
-
-.input:focus {
-  outline: transparent;
-}
-
-.error {
-  margin-top: 2px;
-  color: #ff0000;
-  font-size: 14px;
-}
 </style>
