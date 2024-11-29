@@ -1,11 +1,10 @@
 <script setup>
 import back from "@/assets/icons/back.svg";
 import down from "@/assets/icons/down.svg";
-import {ref} from "vue";
+import { computed, ref } from 'vue'
+import { useRoute } from 'vue-router'
+import { routes } from '@/main.js'
 
-const props = defineProps({
-  pageNumbers: Object
-})
 
 const isActivePageList = ref(false);
 
@@ -13,6 +12,20 @@ const openPageList = () => {
   isActivePageList.value = !isActivePageList.value;
 }
 
+const route = useRoute()
+//console.log('Текущий роут: ', route.path)
+
+const currentRoute = computed(() => routes.find(r => r.path === route.path))
+//console.log('Текущий роут инфо: ', currentRoute.value)
+
+const currentRouteIndex = computed(() => routes.findIndex(r => r.path === route.path))
+//console.log('Индекс текущего роута: ', currentRouteIndex.value)
+
+const routersAmount = computed(() => routes.length)
+//console.log('Всего роутов: ', routersAmount.value)
+
+const otherRoutes = computed(() => routes.filter(r => r.path !== route.path).slice(1))
+//console.log('Остальные роуты: ', otherRoutes.value)
 
 </script>
 
@@ -26,7 +39,7 @@ const openPageList = () => {
             @click.prevent="$router.back()"/>
       </div>
       <div class="drop-down" @click="openPageList">
-        <div class="drop-down__label">Страница {{props.pageNumbers.a}}</div>
+        <div class="drop-down__label">{{currentRoute.name}}</div>
         <div class="icon">
           <img
               :src="down"
@@ -34,27 +47,21 @@ const openPageList = () => {
         </div>
         <div class="drop-down__list" v-if="isActivePageList">
           <ul>
-            <li>
+            <li
+                v-for="route in otherRoutes"
+            >
               <RouterLink
-                :to="`/page_${props.pageNumbers.b}`"
+                :to="route.path"
                 class="link"
               >
-                Страница {{props.pageNumbers.b}}
-              </RouterLink>
-            </li>
-            <li>
-              <RouterLink
-                  :to="`/page_${props.pageNumbers.c}`"
-                  class="link"
-              >
-                Страница {{props.pageNumbers.c}}
+                {{route.name}}
               </RouterLink>
             </li>
           </ul>
         </div>
       </div>
     </div>
-    <h1 class="title">Этап <span>{{props.pageNumbers.a}}</span> из <span>3</span></h1>
+    <h1 class="title">Этап <span>{{currentRouteIndex}}</span> из <span>{{ routersAmount - 1 }}</span></h1>
   </div>
 </template>
 

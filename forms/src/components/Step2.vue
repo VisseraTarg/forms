@@ -4,12 +4,8 @@ import { boolean, number, object, string } from 'yup'
 import { computed } from 'vue'
 import Header from '@/components/Header.vue'
 import { useDataStore } from '@/stores/store'
+import NextButton from '@/components/NextButton.vue'
 
-const pageNumbers = {
-  a: 2,
-  b: 1,
-  c: 3,
-}
 
 const { values, validate, errors, defineField } = useForm({
   validationSchema: object({
@@ -122,7 +118,7 @@ const isDisabled = computed(() => !isDirty.value || !isValid.value)
 <template>
   <div class="wrapper">
     <div class="form">
-      <Header :pageNumbers="pageNumbers"/>
+      <Header/>
       <div class="form__wrapper">
         <div class="input__wrapper">
           <div class="label">Дата рождения<span>*</span></div>
@@ -166,15 +162,11 @@ const isDisabled = computed(() => !isDirty.value || !isValid.value)
           <br>
         </div>
         <div class="input__wrapper">
-          <RouterLink to="/page_3">
-            <button
-                class="button"
-                @click="preSubmit(day,month,year,gender,isMarried,email,telephone)"
-                :disabled="isDisabled"
-            >
-              Далее
-            </button>
-          </RouterLink>
+          <NextButton
+              title="Далее"
+              @click="preSubmit(day,month,year,gender,isMarried,email,telephone)"
+              :disabled="isDisabled"
+          />
         </div>
       </div>
     </div>

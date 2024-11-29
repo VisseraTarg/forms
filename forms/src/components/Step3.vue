@@ -2,12 +2,7 @@
 import Header from '@/components/Header.vue'
 import { useDataStore } from '@/stores/store'
 import { computed, ref } from 'vue'
-
-const pageNumbers = {
-  a: 3,
-  b: 1,
-  c: 2,
-}
+import NextButton from '@/components/NextButton.vue'
 
 const store = useDataStore()
 
@@ -16,8 +11,8 @@ const months = [ 'Январь', 'Февраль', 'Март', 'Апрель', '
 const isConfirm = ref(false)
 
 const confirm = () => {
-  console.log('confirm', isConfirm.value)
   isConfirm.value = !isConfirm.value
+  console.log('confirm', isConfirm.value)
 }
 
 const forSubmit = computed(() => {
@@ -36,7 +31,7 @@ const forSubmit = computed(() => {
 })
 
 const submit = () => {
-  console.log('submit', forSubmit.value)
+  console.log('submit:', forSubmit.value)
 
   store.clearStoreData()
   alert('Данные отправлены')
@@ -49,7 +44,7 @@ const submit = () => {
 
   <div class="wrapper">
     <div class="form">
-      <Header :pageNumbers="pageNumbers"/>
+      <Header/>
       <div class="form__wrapper">
         <div class="input__wrapper">
           <div class="input__wrapper">
@@ -109,15 +104,11 @@ const submit = () => {
           <span>Подтверждаю обработку личных данных</span>
         </div>
         <div class="input__wrapper">
-          <RouterLink to="/page_1">
-            <input
-                type="submit"
-                value="Отправить"
-                :disabled="!isConfirm"
-                @click="submit"
-                class="button"
-            />
-          </RouterLink>
+          <NextButton
+              title="Отправить"
+              @click="submit"
+              :disabled="!isConfirm"
+          />
         </div>
 
 

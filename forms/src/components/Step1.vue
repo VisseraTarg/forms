@@ -4,13 +4,8 @@ import { object, string } from 'yup'
 import Header from '@/components/Header.vue'
 import { useDataStore } from '@/stores/store'
 import { computed } from 'vue'
+import NextButton from '@/components/NextButton.vue'
 
-
-const pageNumbers = {
-  a: 1,
-  b: 2,
-  c: 3,
-}
 
 const store = useDataStore()
 const { values, validate, errors, defineField, resetForm } = useForm({
@@ -56,7 +51,7 @@ const isValid = computed(() => isValid_S.value && isValid_N.value && !showError_
 <template>
   <div class="wrapper">
     <div class="form">
-      <Header :pageNumbers="pageNumbers"/>
+      <Header/>
       <div class="form__wrapper">
         <div class="input__wrapper">
           <div class="label">Фамилия<span>*</span></div>
@@ -74,15 +69,11 @@ const isValid = computed(() => isValid_S.value && isValid_N.value && !showError_
           <div class="error" v-if="showError_P">{{ errors.patronymic }}</div>
         </div>
         <div class="input__wrapper">
-          <RouterLink to="/page_2">
-            <button
-                class="button"
-                @click="preSubmit(surname,name,patronymic)"
-                v-bind:disabled="!isValid"
-            >
-              Далее
-            </button>
-          </RouterLink>
+          <NextButton
+              title="Далее"
+              @click="preSubmit(surname,name,patronymic)"
+              v-bind:disabled="!isValid"
+          />
         </div>
 
       </div>
